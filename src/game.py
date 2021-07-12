@@ -30,7 +30,10 @@ class Connect2():
         self.reward_draw = 0.5
         self.reward_loss = 0
         
-        
+    def get_board_state(self,):
+        return getattr(self, "board")
+
+
     def reset(self,):
         self.board=[0,0,0,0]
         self.player=1
@@ -63,27 +66,30 @@ class Connect2():
             
     def play_mcts(self, action):
         """From the perspective of player 1"""
-      
+        output = None
         if action not in self.action_space:
             raise ValueError(f"Action: {action} is not allowed from the action space: {self.action_space}")
             
         if self._is_legal(action):
-            self.board[action]= self.player
+            board_temp = self.board.copy()
+            board_temp[action]= self.player
+            self.board = board_temp.copy()
             is_win=self._is_win()
-            if is_win and self.player==1:
-                print("player", self.player, "is winner")
-                return self.reward_win
-            elif is_win and self.player==-1:
-                print("player", self.player, "is winner")
-                return self.reward_loss
+            if is_win: # and self.player==1:
+                #print("player", self.player, "is winner")
+                output = self.reward_win
+            #elif is_win and self.player==-1:
+            #    print("player", self.player, "is winner")
+            #    output= self.reward_loss
             elif not is_win and len(self._get_possible_actions(self.board))==0:
-                print("draw")
-                return self.reward_draw
+                #print("draw")
+                output = self.reward_draw
             
             self.player = self.player*-1
             
         else:
             raise ValueError("Illegal move")
+        return output
         
     def _is_legal(self, action, state=None):
         """We allow to ways of calling the method. Directly to check if an state is win or lost or by chcking the board"""
